@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Dashboard - Football Classifier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 font-sans">
+    <header
+      class="bg-green-600 text-white p-4 flex justify-between items-center"
+    >
+      <div>
+        <h1 class="text-2xl font-bold">Football Classifier - User Dashboard</h1>
+      </div>
+      <a
+        href="auth.html"
+        class="bg-white text-green-600 px-4 py-2 rounded hover:bg-gray-100 hover:scale-105 transition-all duration-200"
+      >
+        Logout
+      </a>
+    </header>
+
+    <main class="max-w-6xl mx-auto mt-8 p-4">
+      <section class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-green-600">User Dashboard</h2>
+        <p class="text-gray-600 mt-2">Classify football field images.</p>
+      </section>
+
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <!-- Image Upload -->
+        <div id="image-upload" class="space-y-4">
+          <h3 class="text-xl font-semibold text-green-600 mb-4">
+            Upload Image and Get Results
+          </h3>
+          <div
+            class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 w-128 h-64 mx-auto flex items-center justify-center"
+            id="preview-container"
+          >
+            <label for="image-file" class="inline-block">
+              <span
+                class="bg-green-600 text-white px-4 py-2 rounded flex items-center justify-center gap-2 cursor-pointer hover:bg-green-700 hover:scale-105 transition-all duration-200"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4v16m8-8H4"
+                  ></path>
+                </svg>
+                Choose File
+              </span>
+              <input
+                type="file"
+                id="image-file"
+                class="hidden"
+                accept="image/*"
+              />
+            </label>
+            <img
+              id="image-preview"
+              src=""
+              alt="Image Preview"
+              class="hidden max-w-full max-h-full object-contain rounded shadow-md"
+            />
+          </div>
+          <button
+            id="upload-btn"
+            class="bg-green-600 text-white px-4 py-2 rounded w-full hover:bg-green-700 hover:scale-105 transition-all duration-200"
+          >
+            Upload and Classify
+          </button>
+          <div id="classification-results" class="mt-4 hidden">
+            <h4 class="text-lg font-semibold text-green-600">
+              Annotated Image
+            </h4>
+            <div id="results-content" class="text-gray-600 mt-2 space-y-1">
+              <img
+                id="annotated-image"
+                src=""
+                alt="Annotated"
+                class="mx-auto rounded shadow-md"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // Image preview functionality
+      document
+        .getElementById("image-file")
+        .addEventListener("change", (event) => {
+          const file = event.target.files[0];
+          const previewImg = document.getElementById("image-preview");
+          const previewContainer = document.getElementById("preview-container");
+
+          if (file) {
+            const fileReader = new FileReader();
+            fileReader.onload = (e) => {
+              previewImg.src = e.target.result;
+              previewImg.classList.remove("hidden");
+              previewContainer.querySelector("label").classList.add("hidden");
+            };
+            fileReader.readAsDataURL(file);
+          } else {
+            previewImg.src = "";
+            previewImg.classList.add("hidden");
+            previewContainer.querySelector("label").classList.remove("hidden");
+          }
+        });
+
+      document
+        .getElementById("upload-btn")
+        .addEventListener("click", async () => {
+          const fileInput = document.getElementById("image-file");
+          if (!fileInput.files.length) {
+            alert("Please select an image to upload");
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append("image", fileInput.files[0]);
+
+          try {
+            const response = await fetch("http://localhost:5001/upload_image", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (!response.ok) {
+              const errorResult = await response.json();
+              alert(`Error: ${errorResult.error || "Upload failed"}`);
+              return;
+            }
+
+            const result = await response.json();
+            console.log("Backend response:", result);
+
+            // Set the annotated image source
+            const annotatedImg = document.getElementById("annotated-image");
+            const imageUrl = `http://localhost:5001/${result.filename}`;
+            console.log("Setting image src to:", imageUrl);
+            annotatedImg.src = imageUrl;
+            document
+              .getElementById("classification-results")
+              .classList.remove("hidden");
+
+            // Reset preview
+            const previewImg = document.getElementById("image-preview");
+            previewImg.src = "";
+            previewImg.classList.add("hidden");
+            document
+              .getElementById("preview-container")
+              .querySelector("label")
+              .classList.remove("hidden");
+            fileInput.value = "";
+          } catch (error) {
+            console.error("Upload failed:", error);
+            alert("An error occurred while uploading the image.");
+          }
+        });
+    </script>
+  </body>
+</html>

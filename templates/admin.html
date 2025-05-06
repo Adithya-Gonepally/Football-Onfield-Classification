@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Football Classifier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .tab-container {
+        position: relative;
+        display: inline-flex;
+      }
+      .tab-btn {
+        position: relative;
+        z-index: 1;
+        transition: color 0.3s ease;
+      }
+      .tab-btn.active {
+        color: white;
+      }
+      .tab-btn:not(.active) {
+        color: #374151;
+      }
+      .sliding-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 100%;
+        background-color: #16a34a;
+        transition: transform 0.3s ease, width 0.3s ease;
+        z-index: 0;
+        border-radius: 8px;
+      }
+      .tab-content {
+        transition: opacity 0.3s ease;
+      }
+      .tab-content.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .tab-content:not(.hidden) {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 font-sans">
+    <header
+      class="bg-green-600 text-white p-4 flex justify-between items-center"
+    >
+      <h1 class="text-2xl font-bold">Football Classifier - Admin Dashboard</h1>
+      <a
+        href="auth.html"
+        class="bg-white text-green-600 px-4 py-2 rounded hover:bg-gray-100 hover:scale-105 transition-all duration-200"
+        >Logout</a
+      >
+    </header>
+
+    <main class="max-w-6xl mx-auto mt-8 p-4">
+      <section class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-green-600">Admin Dashboard</h2>
+        <p class="text-gray-600 mt-2">
+          Manage users and classify football field images.
+        </p>
+      </section>
+
+      <div class="flex justify-center mb-6">
+        <div class="tab-container">
+          <button
+            id="show-user-management"
+            class="tab-btn active bg-transparent px-4 py-2 rounded-l-lg focus:outline-none hover:scale-105 transition-all duration-200"
+          >
+            User Management
+          </button>
+          <button
+            id="show-image-upload"
+            class="tab-btn bg-transparent px-4 py-2 rounded-r-lg focus:outline-none hover:scale-105 transition-all duration-200"
+          >
+            Upload Image and Get Results
+          </button>
+          <div id="sliding-bar" class="sliding-bar"></div>
+        </div>
+      </div>
+
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <!-- User Management Tab -->
+        <div id="user-management" class="space-y-4 tab-content">
+          <h3 class="text-xl font-semibold text-green-600 mb-4">
+            User Management
+          </h3>
+          <div id="pending-users" class="space-y-2"></div>
+        </div>
+
+        <!-- Image Upload Tab -->
+        <div id="image-upload" class="space-y-4 tab-content hidden">
+          <h3 class="text-xl font-semibold text-green-600 mb-4">
+            Upload Image and Get Results
+          </h3>
+          <div
+            class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 w-128 h-64 mx-auto flex items-center justify-center"
+            id="preview-container"
+          >
+            <label for="image-file" class="inline-block">
+              <span
+                class="bg-green-600 text-white px-4 py-2 rounded flex items-center justify-center gap-2 cursor-pointer hover:bg-green-700 hover:scale-105 transition-all duration-200"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4v16m8-8H4"
+                  ></path>
+                </svg>
+                Choose File
+              </span>
+              <input
+                type="file"
+                id="image-file"
+                class="hidden"
+                accept="image/*"
+              />
+            </label>
+            <img
+              id="image-preview"
+              src=""
+              alt="Image Preview"
+              class="hidden max-w-full max-h-full object-contain rounded shadow-md"
+            />
+          </div>
+          <button
+            id="upload-btn"
+            class="bg-green-600 text-white px-4 py-2 rounded w-full hover:bg-green-700 hover:scale-105 transition-all duration-200"
+          >
+            Upload and Classify
+          </button>
+          <div id="classification-results" class="mt-4 hidden">
+            <h4 class="text-lg font-semibold text-green-600">
+              Annotated Image
+            </h4>
+            <div id="results-content" class="text-gray-600 mt-2 space-y-1">
+              <img
+                id="annotated-image"
+                src=""
+                alt="Annotated"
+                class="mx-auto rounded shadow-md"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      console.log("Page loaded, setting up event listeners");
+
+      // Tab functionality
+      const showUserManagementBtn = document.getElementById(
+        "show-user-management"
+      );
+      const showImageUploadBtn = document.getElementById("show-image-upload");
+      const userManagementTab = document.getElementById("user-management");
+      const imageUploadTab = document.getElementById("image-upload");
+      const slidingBar = document.getElementById("sliding-bar");
+
+      function updateSlidingBar(activeBtn) {
+        const btnRect = activeBtn.getBoundingClientRect();
+        const containerRect = activeBtn.parentElement.getBoundingClientRect();
+        const translateX = btnRect.left - containerRect.left;
+        slidingBar.style.width = `${btnRect.width}px`;
+        slidingBar.style.transform = `translateX(${translateX}px)`;
+      }
+
+      updateSlidingBar(showUserManagementBtn);
+
+      window.addEventListener("resize", () => {
+        const activeBtn = showUserManagementBtn.classList.contains("active")
+          ? showUserManagementBtn
+          : showImageUploadBtn;
+        updateSlidingBar(activeBtn);
+      });
+
+      showUserManagementBtn.addEventListener("click", () => {
+        userManagementTab.classList.remove("hidden");
+        imageUploadTab.classList.add("hidden");
+        showUserManagementBtn.classList.add("active");
+        showImageUploadBtn.classList.remove("active");
+        updateSlidingBar(showUserManagementBtn);
+        loadPendingUsers();
+      });
+
+      showImageUploadBtn.addEventListener("click", () => {
+        imageUploadTab.classList.remove("hidden");
+        userManagementTab.classList.add("hidden");
+        showImageUploadBtn.classList.add("active");
+        showUserManagementBtn.classList.remove("active");
+        updateSlidingBar(showImageUploadBtn);
+      });
+
+      async function loadPendingUsers() {
+        const response = await fetch("http://localhost:5001/pending_users");
+        const users = await response.json();
+        const container = document.getElementById("pending-users");
+        container.innerHTML = "";
+
+        if (users.length === 0) {
+          container.innerHTML =
+            '<p class="text-gray-600">No pending users.</p>';
+          return;
+        }
+
+        users.forEach((user) => {
+          const userDiv = document.createElement("div");
+          userDiv.className =
+            "flex justify-between items-center p-2 border rounded";
+          userDiv.innerHTML = `
+            <span>${user.email}</span>
+            <div>
+                <button onclick="manageUser('${user.email}', 'approve')" class="bg-green-600 text-white px-2 py-1 rounded mr-2 hover:bg-green-700 hover:scale-105 transition-all duration-200">Approve</button>
+                <button onclick="manageUser('${user.email}', 'reject')" class="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 hover:scale-105 transition-all duration-200">Reject</button>
+            </div>
+          `;
+          container.appendChild(userDiv);
+        });
+      }
+
+      async function manageUser(email, action) {
+        const response = await fetch("http://localhost:5001/manage_user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, action }),
+        });
+        const result = await response.json();
+        alert(result.message);
+        loadPendingUsers();
+      }
+
+      // Image preview functionality
+      document
+        .getElementById("image-file")
+        .addEventListener("change", (event) => {
+          console.log("Image file input changed");
+          const file = event.target.files[0];
+          const previewImg = document.getElementById("image-preview");
+          const previewContainer = document.getElementById("preview-container");
+
+          if (file) {
+            const fileReader = new FileReader();
+            fileReader.onload = (e) => {
+              previewImg.src = e.target.result;
+              previewImg.classList.remove("hidden");
+              previewContainer.querySelector("label").classList.add("hidden");
+            };
+            fileReader.readAsDataURL(file);
+          } else {
+            previewImg.src = "";
+            previewImg.classList.add("hidden");
+            previewContainer.querySelector("label").classList.remove("hidden");
+          }
+        });
+
+      // Upload button event listener
+      const uploadBtn = document.getElementById("upload-btn");
+      uploadBtn.addEventListener("click", async (event) => {
+        event.preventDefault(); // Prevent any default behavior
+        console.log("Upload button click event triggered", {
+          isTrusted: event.isTrusted,
+          eventType: event.type,
+          target: event.target.id,
+        });
+
+        // Only proceed if the event was triggered by a user interaction
+        if (!event.isTrusted) {
+          console.log("Ignoring non-user-initiated click event");
+          return;
+        }
+
+        const fileInput = document.getElementById("image-file");
+        if (!fileInput.files.length) {
+          console.log("No file selected, showing alert");
+          alert("Please select an image to upload");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("image", fileInput.files[0]);
+
+        try {
+          const response = await fetch("http://localhost:5001/upload_image", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const errorResult = await response.json();
+            alert(`Error: ${errorResult.error || "Upload failed"}`);
+            return;
+          }
+
+          const result = await response.json();
+          console.log("Backend response:", result);
+
+          const annotatedImg = document.getElementById("annotated-image");
+          const imageUrl = `http://localhost:5001/${result.filename}`;
+          console.log("Setting image src to:", imageUrl);
+          annotatedImg.src = imageUrl;
+          document
+            .getElementById("classification-results")
+            .classList.remove("hidden");
+
+          // Reset preview
+          const previewImg = document.getElementById("image-preview");
+          previewImg.src = "";
+          previewImg.classList.add("hidden");
+          document
+            .getElementById("preview-container")
+            .querySelector("label")
+            .classList.remove("hidden");
+          fileInput.value = "";
+        } catch (error) {
+          console.error("Upload failed:", error);
+          alert("An error occurred while uploading the image.");
+        }
+      });
+
+      // Log to confirm the script has finished loading
+      console.log("Event listeners set up successfully");
+
+      // Check for unintended triggers on page load
+      window.addEventListener("load", () => {
+        console.log("Window fully loaded");
+        const fileInput = document.getElementById("image-file");
+        if (fileInput.files.length > 0) {
+          console.log("File input has a file on page load:", fileInput.files);
+        } else {
+          console.log("No file in input on page load");
+        }
+      });
+
+      // Debug any click events on the document
+      document.addEventListener("click", (event) => {
+        console.log("Document click event:", {
+          target: event.target.id || event.target.tagName,
+          isTrusted: event.isTrusted,
+        });
+      });
+
+      // Load pending users initially
+      loadPendingUsers();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register & Login - Football Classifier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Custom styles for sliding bar effect */
+      .tab-container {
+        position: relative;
+        display: inline-flex;
+      }
+      .tab-btn {
+        position: relative;
+        z-index: 1;
+        transition: color 0.3s ease;
+      }
+      .tab-btn.active {
+        color: white;
+      }
+      .tab-btn:not(.active) {
+        color: #374151;
+      }
+      .sliding-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 100%;
+        background-color: #16a34a; /* green-600 */
+        transition: transform 0.3s ease, width 0.3s ease;
+        z-index: 0;
+        border-radius: 8px;
+      }
+      /* Fade transition for tab content */
+      .tab-content {
+        transition: opacity 0.3s ease;
+      }
+      .tab-content.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .tab-content:not(.hidden) {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 font-sans">
+    <header
+      class="bg-green-600 text-white p-4 flex justify-between items-center"
+    >
+      <div>
+        <h1 class="text-2xl font-bold">Football Classifier</h1>
+      </div>
+      <a
+        href="http://127.0.0.1:5001/"
+        class="bg-white text-green-600 px-4 py-2 rounded hover:bg-gray-100 hover:scale-105 transition-all duration-200"
+        >Back to Home</a
+      >
+    </header>
+
+    <main class="max-w-6xl mx-auto mt-8 p-4">
+      <section class="text-center mb-8">
+        <h2 class="text-3xl font-bold text-green-600">Register or Login</h2>
+        <p class="text-gray-600 mt-2">
+          New users can register below, and users can log in to access the
+          system.
+        </p>
+      </section>
+
+      <div class="flex justify-center mb-6">
+        <div class="tab-container">
+          <button
+            id="show-register"
+            class="tab-btn active bg-transparent px-4 py-2 rounded-l-lg focus:outline-none hover:scale-105 transition-all duration-200"
+          >
+            Register
+          </button>
+          <button
+            id="show-login"
+            class="tab-btn bg-transparent px-4 py-2 rounded-r-lg focus:outline-none hover:scale-105 transition-all duration-200"
+          >
+            Login
+          </button>
+          <div id="sliding-bar" class="sliding-bar"></div>
+        </div>
+      </div>
+
+      <div class="max-w-md mx-auto">
+        <!-- Registration Form -->
+        <div
+          id="register-form"
+          class="bg-white p-6 rounded-lg shadow-md tab-content"
+        >
+          <h3 class="text-xl font-semibold text-green-600 mb-4">
+            Register as a New User
+          </h3>
+          <div class="space-y-4">
+            <div>
+              <label for="reg-email" class="block text-gray-600">Email</label>
+              <input
+                type="email"
+                id="reg-email"
+                class="w-full p-2 border rounded"
+                placeholder="your.email@example.com"
+                required
+              />
+            </div>
+            <div>
+              <label for="reg-password" class="block text-gray-600"
+                >Password</label
+              >
+              <input
+                type="password"
+                id="reg-password"
+                class="w-full p-2 border rounded"
+                placeholder="Create a password"
+                required
+              />
+            </div>
+            <div>
+              <label for="reg-confirm-password" class="block text-gray-600"
+                >Confirm Password</label
+              >
+              <input
+                type="password"
+                id="reg-confirm-password"
+                class="w-full p-2 border rounded"
+                placeholder="Confirm your password"
+                required
+              />
+            </div>
+            <button
+              id="register-btn"
+              class="bg-green-600 text-white px-4 py-2 rounded w-full hover:bg-green-700 hover:scale-105 transition-all duration-200"
+            >
+              Register
+            </button>
+            <p id="register-message" class="text-sm text-red-600 hidden"></p>
+          </div>
+        </div>
+
+        <!-- Login Form -->
+        <div
+          id="login-form"
+          class="bg-white p-6 rounded-lg shadow-md tab-content hidden"
+        >
+          <h3 class="text-xl font-semibold text-green-600 mb-4">Login</h3>
+          <div class="space-y-4">
+            <div>
+              <label for="login-email" class="block text-gray-600">Email</label>
+              <input
+                type="email"
+                id="login-email"
+                class="w-full p-2 border rounded"
+                placeholder="your.email@example.com"
+                required
+              />
+            </div>
+            <div>
+              <label for="login-password" class="block text-gray-600"
+                >Password</label
+              >
+              <input
+                type="password"
+                id="login-password"
+                class="w-full p-2 border rounded"
+                placeholder="Enter password"
+                required
+              />
+            </div>
+            <button
+              id="login-btn"
+              class="bg-green-600 text-white px-4 py-2 rounded w-full hover:bg-green-700 hover:scale-105 transition-all duration-200"
+            >
+              Login
+            </button>
+            <p id="login-message" class="text-sm text-red-600 hidden"></p>
+          </div>
+          <!-- Admin Credentials Section -->
+          <div class="mt-6 p-4 bg-white rounded-lg border border-green-600">
+            <h3 class="text-lg font-semibold text-green-600 mb-2">
+              Admin Credentials
+            </h3>
+            <div class="text-gray-600">
+              <p><strong>Email:</strong> admin@example.com</p>
+              <p class="mt-2"><strong>Password:</strong> admin123</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const showRegisterBtn = document.getElementById("show-register");
+      const showLoginBtn = document.getElementById("show-login");
+      const registerForm = document.getElementById("register-form");
+      const loginForm = document.getElementById("login-form");
+      const slidingBar = document.getElementById("sliding-bar");
+
+      // Function to update the sliding bar position and width
+      function updateSlidingBar(activeBtn) {
+        const btnRect = activeBtn.getBoundingClientRect();
+        const containerRect = activeBtn.parentElement.getBoundingClientRect();
+        const translateX = btnRect.left - containerRect.left;
+        slidingBar.style.width = `${btnRect.width}px`;
+        slidingBar.style.transform = `translateX(${translateX}px)`;
+      }
+
+      // Initialize sliding bar position
+      updateSlidingBar(showRegisterBtn);
+
+      // Update sliding bar on window resize
+      window.addEventListener("resize", () => {
+        const activeBtn = showRegisterBtn.classList.contains("active")
+          ? showRegisterBtn
+          : showLoginBtn;
+        updateSlidingBar(activeBtn);
+      });
+
+      // Check URL fragment to show login tab if #login is present
+      if (window.location.hash === "#login") {
+        loginForm.classList.remove("hidden");
+        registerForm.classList.add("hidden");
+        showLoginBtn.classList.add("active");
+        showRegisterBtn.classList.remove("active");
+        updateSlidingBar(showLoginBtn);
+      }
+
+      showRegisterBtn.addEventListener("click", () => {
+        registerForm.classList.remove("hidden");
+        loginForm.classList.add("hidden");
+        showRegisterBtn.classList.add("active");
+        showLoginBtn.classList.remove("active");
+        updateSlidingBar(showRegisterBtn);
+      });
+
+      showLoginBtn.addEventListener("click", () => {
+        loginForm.classList.remove("hidden");
+        registerForm.classList.add("hidden");
+        showLoginBtn.classList.add("active");
+        showRegisterBtn.classList.remove("active");
+        updateSlidingBar(showLoginBtn);
+      });
+
+      // Handle Registration
+      document
+        .getElementById("register-btn")
+        .addEventListener("click", async () => {
+          const email = document.getElementById("reg-email").value;
+          const password = document.getElementById("reg-password").value;
+          const confirmPassword = document.getElementById(
+            "reg-confirm-password"
+          ).value;
+          const messageEl = document.getElementById("register-message");
+
+          if (password !== confirmPassword) {
+            messageEl.textContent = "Passwords do not match";
+            messageEl.classList.remove("hidden");
+            return;
+          }
+
+          try {
+            const response = await fetch("http://localhost:5001/register", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password }),
+            });
+            const result = await response.json();
+
+            messageEl.textContent = result.message;
+            messageEl.classList.remove("hidden");
+            if (response.ok) {
+              messageEl.classList.remove("text-red-600");
+              messageEl.classList.add("text-green-600");
+            }
+          } catch (error) {
+            console.error("Registration error:", error);
+            messageEl.textContent =
+              "Failed to connect to the server. Please ensure the server is running on http://localhost:5001.";
+            messageEl.classList.remove("hidden");
+          }
+        });
+
+      // Handle Login
+      document
+        .getElementById("login-btn")
+        .addEventListener("click", async (event) => {
+          event.preventDefault();
+          const email = document.getElementById("login-email").value;
+          const password = document.getElementById("login-password").value;
+          const messageEl = document.getElementById("login-message");
+
+          if (!email || !password) {
+            messageEl.textContent = "Please enter both email and password";
+            messageEl.classList.remove("hidden");
+            return;
+          }
+
+          try {
+            console.log("Attempting login with email:", email);
+            const response = await fetch("http://localhost:5001/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password }),
+            });
+            console.log("Login response status:", response.status);
+            const result = await response.json();
+            console.log("Login response data:", result);
+
+            messageEl.textContent = result.message;
+            messageEl.classList.remove("hidden");
+            if (response.ok) {
+              messageEl.classList.remove("text-red-600");
+              messageEl.classList.add("text-green-600");
+              if (result.isAdmin) {
+                console.log("Redirecting to admin.html");
+                window.location.href = "admin.html";
+              } else {
+                console.log("Redirecting to user.html");
+                window.location.href = "user.html";
+              }
+            }
+          } catch (error) {
+            console.error("Login error:", error);
+            messageEl.textContent =
+              "Failed to connect to the server. Please ensure the server is running on http://localhost:5001.";
+            messageEl.classList.remove("hidden");
+          }
+        });
+    </script>
+  </body>
+</html>
