@@ -202,7 +202,7 @@
       });
 
       async function loadPendingUsers() {
-        const response = await fetch("http://localhost:5001/pending_users");
+        const response = await fetch("/pending_users");
         const users = await response.json();
         const container = document.getElementById("pending-users");
         container.innerHTML = "";
@@ -229,7 +229,7 @@
       }
 
       async function manageUser(email, action) {
-        const response = await fetch("http://localhost:5001/manage_user", {
+        const response = await fetch("/manage_user", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, action }),
@@ -273,7 +273,6 @@
           target: event.target.id,
         });
 
-        // Only proceed if the event was triggered by a user interaction
         if (!event.isTrusted) {
           console.log("Ignoring non-user-initiated click event");
           return;
@@ -290,7 +289,7 @@
         formData.append("image", fileInput.files[0]);
 
         try {
-          const response = await fetch("http://localhost:5001/upload_image", {
+          const response = await fetch("/upload_image", {
             method: "POST",
             body: formData,
           });
@@ -305,7 +304,7 @@
           console.log("Backend response:", result);
 
           const annotatedImg = document.getElementById("annotated-image");
-          const imageUrl = `http://localhost:5001/${result.filename}`;
+          const imageUrl = `/${result.filename}`;
           console.log("Setting image src to:", imageUrl);
           annotatedImg.src = imageUrl;
           document
@@ -327,10 +326,8 @@
         }
       });
 
-      // Log to confirm the script has finished loading
       console.log("Event listeners set up successfully");
 
-      // Check for unintended triggers on page load
       window.addEventListener("load", () => {
         console.log("Window fully loaded");
         const fileInput = document.getElementById("image-file");
@@ -341,7 +338,6 @@
         }
       });
 
-      // Debug any click events on the document
       document.addEventListener("click", (event) => {
         console.log("Document click event:", {
           target: event.target.id || event.target.tagName,
@@ -349,7 +345,6 @@
         });
       });
 
-      // Load pending users initially
       loadPendingUsers();
     </script>
   </body>
