@@ -6,7 +6,6 @@
     <title>Register & Login - Football Classifier</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      /* Custom styles for sliding bar effect */
       .tab-container {
         position: relative;
         display: inline-flex;
@@ -27,12 +26,11 @@
         bottom: 0;
         left: 0;
         height: 100%;
-        background-color: #16a34a; /* green-600 */
+        background-color: #16a34a;
         transition: transform 0.3s ease, width 0.3s ease;
         z-index: 0;
         border-radius: 8px;
       }
-      /* Fade transition for tab content */
       .tab-content {
         transition: opacity 0.3s ease;
       }
@@ -53,7 +51,7 @@
         <h1 class="text-2xl font-bold">Football Classifier</h1>
       </div>
       <a
-        href="http://127.0.0.1:5001/"
+        href="/"
         class="bg-white text-green-600 px-4 py-2 rounded hover:bg-gray-100 hover:scale-105 transition-all duration-200"
         >Back to Home</a
       >
@@ -198,7 +196,6 @@
       const loginForm = document.getElementById("login-form");
       const slidingBar = document.getElementById("sliding-bar");
 
-      // Function to update the sliding bar position and width
       function updateSlidingBar(activeBtn) {
         const btnRect = activeBtn.getBoundingClientRect();
         const containerRect = activeBtn.parentElement.getBoundingClientRect();
@@ -207,10 +204,8 @@
         slidingBar.style.transform = `translateX(${translateX}px)`;
       }
 
-      // Initialize sliding bar position
       updateSlidingBar(showRegisterBtn);
 
-      // Update sliding bar on window resize
       window.addEventListener("resize", () => {
         const activeBtn = showRegisterBtn.classList.contains("active")
           ? showRegisterBtn
@@ -218,7 +213,6 @@
         updateSlidingBar(activeBtn);
       });
 
-      // Check URL fragment to show login tab if #login is present
       if (window.location.hash === "#login") {
         loginForm.classList.remove("hidden");
         registerForm.classList.add("hidden");
@@ -243,7 +237,6 @@
         updateSlidingBar(showLoginBtn);
       });
 
-      // Handle Registration
       document
         .getElementById("register-btn")
         .addEventListener("click", async () => {
@@ -261,7 +254,7 @@
           }
 
           try {
-            const response = await fetch("http://localhost:5001/register", {
+            const response = await fetch("/register", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ email, password }),
@@ -277,12 +270,11 @@
           } catch (error) {
             console.error("Registration error:", error);
             messageEl.textContent =
-              "Failed to connect to the server. Please ensure the server is running on http://localhost:5001.";
+              "Failed to connect to the server. Please ensure the server is running.";
             messageEl.classList.remove("hidden");
           }
         });
 
-      // Handle Login
       document
         .getElementById("login-btn")
         .addEventListener("click", async (event) => {
@@ -298,15 +290,12 @@
           }
 
           try {
-            console.log("Attempting login with email:", email);
-            const response = await fetch("http://localhost:5001/login", {
+            const response = await fetch("/login", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ email, password }),
             });
-            console.log("Login response status:", response.status);
             const result = await response.json();
-            console.log("Login response data:", result);
 
             messageEl.textContent = result.message;
             messageEl.classList.remove("hidden");
@@ -314,17 +303,15 @@
               messageEl.classList.remove("text-red-600");
               messageEl.classList.add("text-green-600");
               if (result.isAdmin) {
-                console.log("Redirecting to admin.html");
                 window.location.href = "admin.html";
               } else {
-                console.log("Redirecting to user.html");
                 window.location.href = "user.html";
               }
             }
           } catch (error) {
             console.error("Login error:", error);
             messageEl.textContent =
-              "Failed to connect to the server. Please ensure the server is running on http://localhost:5001.";
+              "Failed to connect to the server. Please ensure the server is running.";
             messageEl.classList.remove("hidden");
           }
         });
