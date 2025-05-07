@@ -130,7 +130,7 @@
           formData.append("image", fileInput.files[0]);
 
           try {
-            const response = await fetch("http://localhost:5001/upload_image", {
+            const response = await fetch("/upload_image", {
               method: "POST",
               body: formData,
             });
@@ -146,7 +146,7 @@
 
             // Set the annotated image source
             const annotatedImg = document.getElementById("annotated-image");
-            const imageUrl = `http://localhost:5001/${result.filename}`;
+            const imageUrl = `/${result.filename}`;
             console.log("Setting image src to:", imageUrl);
             annotatedImg.src = imageUrl;
             document
